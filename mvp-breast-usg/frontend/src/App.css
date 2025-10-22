@@ -1,0 +1,136 @@
+/* frontend/src/App.css */
+
+/* 1. Definisikan Palet Warna Global */
+:root {
+  --primary-color: #3B82F6; /* Biru cerah sebagai aksen */
+  --primary-hover: #2563EB; /* Biru lebih gelap untuk hover */
+  --text-dark: #1F2937;    /* Abu-abu gelap untuk teks (pengganti hitam) */
+  --text-light: #6B7280;   /* Abu-abu lebih terang untuk sub-teks */
+  --bg-light: #F9FAFB;     /* Off-white untuk latar belakang */
+  --border-color: #E5E7EB; /* Warna border yang lembut */
+}
+
+/* 2. Terapkan Font dan Warna Dasar */
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #f8f9fa; /* Warna dasar jika gradien tidak didukung */
+  /* Gradien linier yang sangat lembut */
+  background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  color: var(--text-dark);
+  position: relative; /* Diperlukan untuk efek aurora */
+  overflow-x: hidden; /* Mencegah blur keluar dari layar */
+}
+
+/* Efek "Aurora" - lingkaran blur berwarna di latar belakang */
+body::before, body::after {
+  content: '';
+  position: fixed;
+  z-index: -1;
+  filter: blur(100px);
+  -webkit-filter: blur(100px);
+}
+
+body::before {
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background-color: rgba(60, 130, 246, 0.1);
+  top: -50px;
+  left: -100px;
+}
+
+body::after {
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background-color: rgba(13, 202, 240, 0.1);
+  bottom: -100px;
+  right: -150px;
+}
+
+/* 3. Perbaiki Tipografi (Ukuran & Jarak) */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-dark);
+  font-weight: 700; /* Membuat judul lebih tebal dan tegas */
+}
+
+.lead {
+  color: var(--text-light);
+  font-weight: 400;
+}
+
+/* 4. Perbarui Styling Komponen Bootstrap */
+.card {
+  border: 1px solid var(--border-color);
+  border-radius: 1rem !important; /* Sudut lebih melengkung */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.3s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-5px); /* Efek terangkat saat di-hover */
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08) !important;
+}
+
+.btn-primary {
+  background-color: var(--primary-color) !important;
+  border: none !important;
+  font-weight: 600 !important;
+  padding: 12px 28px !important;
+  border-radius: 0.5rem !important;
+  transition: all 0.3s ease-in-out;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 7px 14px rgba(59, 130, 246, 0.3);
+}
+/* ... di akhir file App.css ... */
+.glass-card {
+  background: rgba(255, 255, 255, 0.6); /* Warna putih dengan transparansi 60% */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px); /* Untuk support Safari */
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+/* -- Navbar Makeover -- */
+.navbar {
+  /* Efek kaca buram untuk navbar */
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+.navbar-brand {
+  font-weight: 700 !important;
+  font-size: 1.5rem !important;
+}
+
+.nav-link {
+  font-weight: 600 !important;
+  color: var(--text-light) !important;
+  position: relative;
+}
+
+.nav-link.active {
+  color: var(--primary-color) !important;
+}
+
+/* Efek garis bawah saat hover */
+.nav-link::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--primary-color);
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover::after, .nav-link.active::after {
+  width: 70%;
+}
