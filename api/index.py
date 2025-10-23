@@ -1,5 +1,5 @@
 # api/index.py
-# --- KODE LENGKAP YANG SUDAH DISESUAIKAN UNTUK VERCEL ---
+# --- KODE LENGKAP DENGAN PATH YANG SUDAH DIPERBAIKI ---
 
 # --- 1. Import library yang dibutuhkan ---
 from flask import Flask, request, jsonify
@@ -11,28 +11,19 @@ import os
 
 # --- 2. Inisialisasi Aplikasi Flask ---
 app = Flask(__name__)
-# Mengizinkan request dari SEMUA asal (origins). 
-# Ini lebih aman untuk Vercel karena URL frontend Anda tidak lagi 'localhost'.
 CORS(app) 
 
 
-# --- 3. Konfigurasi dan Pemuatan Model (BAGIAN YANG DIUBAH) ---
+# --- 3. Konfigurasi dan Pemuatan Model (BAGIAN YANG DIPERBAIKI) ---
 IMG_SIZE = (160, 160)
 CLASS_LABELS = ['benign', 'malignant']
 
-# --- PATH BARU UNTUK VERCEL ---
-# __file__ akan berada di /var/task/api/index.py saat di Vercel.
-# Kita perlu "mundur" dua kali untuk mencapai root, lalu masuk ke backend/models.
-# os.path.dirname(__file__) -> /var/task/api
-# '..' -> /var/task
-# '..' -> / (root proyek Anda di Vercel)
-# 'backend', 'models', 'nama_model' -> path yang benar
+# --- PATH BARU UNTUK STRUKTUR YANG SUDAH DIRATAKAN ---
+# Kita perlu "mundur" satu level dari folder 'api' untuk menemukan folder 'backend'
 MODEL_PATH = os.path.join(
     os.path.dirname(__file__), '..', 'backend', 'models', 'usg_breast_clean_final.keras'
 )
-# CATATAN: Firebase Admin SDK tidak ada di kode ini, jadi saya tidak menambahkannya.
-# Jika Anda membutuhkannya, logikanya sama, path ke serviceAccountKey.json juga perlu diubah.
-# --------------------------------
+# -----------------------------------------------------------------
 
 try:
     model = tf.keras.models.load_model(MODEL_PATH)
@@ -44,7 +35,6 @@ except Exception as e:
 
 # --- 4. Fungsi Preprocessing (TIDAK PERLU DIUBAH) ---
 def preprocess_image(image_bytes):
-    """Memproses byte gambar mentah menjadi format yang siap untuk model."""
     try:
         nparr = np.frombuffer(image_bytes, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
@@ -64,9 +54,12 @@ def preprocess_image(image_bytes):
 # --- 5. Membuat Endpoint API '/predict' (TIDAK PERLU DIUBAH) ---
 @app.route('/predict', methods=['GET','POST'])
 def predict():
-    """Menerima file gambar, melakukan prediksi, dan mengembalikan hasilnya."""
     if model is None:
         return jsonify({'error': 'Model tidak tersedia atau gagal dimuat'}), 500
+
+    # Bagian ini ditambahkan untuk menangani request GET (untuk pengecekan Vercel)
+    if request.method == 'GET':
+        return jsonify({'status': 'Server is running and ready to predict'})
 
     if 'file' not in request.files:
         return jsonify({'error': 'Tidak ada file gambar dalam request'}), 400
@@ -86,10 +79,10 @@ def predict():
         
         threshold = 0.5
         if prediction_proba < threshold:
-            label = CLASS_LABELS[0]  # benign
+            label = CLASS_LABELS[0]
             confidence = 1 - prediction_proba
         else:
-            label = CLASS_LABELS[1]  # malignant
+            label = CLASS_LABELS[1]
             confidence = prediction_proba
             
         result = {
@@ -104,6 +97,5 @@ def predict():
 
 
 # --- 6. Menjalankan Server (TIDAK PERLU DIUBAH) ---
-# Vercel akan mengabaikan bagian ini, tapi ini tetap berguna untuk testing lokal.
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
