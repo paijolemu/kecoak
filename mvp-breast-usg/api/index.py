@@ -1,8 +1,9 @@
-# backend/app/main.py
+# api/index.py
+# --- KODE LENGKAP YANG SUDAH DISESUAIKAN UNTUK VERCEL ---
 
 # --- 1. Import library yang dibutuhkan ---
 from flask import Flask, request, jsonify
-from flask_cors import CORS # Pastikan sudah di-install: pip install Flask-Cors
+from flask_cors import CORS
 import tensorflow as tf
 import numpy as np
 import cv2
@@ -10,45 +11,48 @@ import os
 
 # --- 2. Inisialisasi Aplikasi Flask ---
 app = Flask(__name__)
-# Mengizinkan request dari frontend (React default di port 3000)
-# Ini penting agar browser tidak memblokir request dari frontend Anda
-CORS(app, resources={r"/predict": {"origins": "http://localhost:3000"}})
+# Mengizinkan request dari SEMUA asal (origins). 
+# Ini lebih aman untuk Vercel karena URL frontend Anda tidak lagi 'localhost'.
+CORS(app) 
 
 
-# --- 3. Konfigurasi dan Pemuatan Model (SESUAIKAN DENGAN MODEL 2 KELAS ANDA) ---
-# Konfigurasi ini harus sama persis dengan saat training model terakhir Anda
+# --- 3. Konfigurasi dan Pemuatan Model (BAGIAN YANG DIUBAH) ---
 IMG_SIZE = (160, 160)
-CLASS_LABELS = ['benign', 'malignant'] # Hanya 2 kelas
+CLASS_LABELS = ['benign', 'malignant']
 
-# Path relatif dari file main.py ke folder models
-# os.path.dirname(__file__) -> folder 'app'
-# '..' -> mundur ke folder 'backend'
-# 'models' -> masuk ke folder 'models'
+# --- PATH BARU UNTUK VERCEL ---
+# __file__ akan berada di /var/task/api/index.py saat di Vercel.
+# Kita perlu "mundur" dua kali untuk mencapai root, lalu masuk ke backend/models.
+# os.path.dirname(__file__) -> /var/task/api
+# '..' -> /var/task
+# '..' -> / (root proyek Anda di Vercel)
+# 'backend', 'models', 'nama_model' -> path yang benar
 MODEL_PATH = os.path.join(
-    os.path.dirname(__file__), '..', 'models', 'usg_breast_clean_final.keras' # GANTI DENGAN NAMA MODEL ANDA
+    os.path.dirname(__file__), '..', 'backend', 'models', 'usg_breast_clean_final.keras'
 )
+# CATATAN: Firebase Admin SDK tidak ada di kode ini, jadi saya tidak menambahkannya.
+# Jika Anda membutuhkannya, logikanya sama, path ke serviceAccountKey.json juga perlu diubah.
+# --------------------------------
 
-# Muat model saat aplikasi pertama kali dijalankan
 try:
     model = tf.keras.models.load_model(MODEL_PATH)
     print(f"--- Model '{MODEL_PATH}' berhasil dimuat. Server siap. ---")
 except Exception as e:
     print(f"FATAL: Error memuat model: {e}")
-    model = None # Tandai bahwa model gagal dimuat
+    model = None
 
 
-# --- 4. Fungsi Preprocessing (SESUAIKAN DENGAN TRAINING TERAKHIR ANDA) ---
+# --- 4. Fungsi Preprocessing (TIDAK PERLU DIUBAH) ---
 def preprocess_image(image_bytes):
     """Memproses byte gambar mentah menjadi format yang siap untuk model."""
     try:
         nparr = np.frombuffer(image_bytes, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         
-        # Proses ini HARUS SAMA PERSIS dengan saat training
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) # Konversi warna
-        img = cv2.resize(img, IMG_SIZE)            # Ubah ukuran
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = cv2.resize(img, IMG_SIZE)
         img_array = np.asarray(img)
-        img_array = img_array.astype('float32') / 255.0 # Normalisasi (rescale 1./255)
+        img_array = img_array.astype('float32') / 255.0
         img_batch = np.expand_dims(img_array, axis=0)
         
         return img_batch
@@ -57,7 +61,7 @@ def preprocess_image(image_bytes):
         return None
 
 
-# --- 5. Membuat Endpoint API '/predict' (UNTUK MODEL 2 KELAS) ---
+# --- 5. Membuat Endpoint API '/predict' (TIDAK PERLU DIUBAH) ---
 @app.route('/predict', methods=['POST'])
 def predict():
     """Menerima file gambar, melakukan prediksi, dan mengembalikan hasilnya."""
@@ -78,10 +82,8 @@ def predict():
         if processed_image is None:
             return jsonify({'error': 'Gagal memproses gambar'}), 500
         
-        # Lakukan prediksi (outputnya adalah 1 angka probabilitas)
         prediction_proba = model.predict(processed_image)[0][0]
         
-        # Interpretasi hasil untuk model biner (2 kelas)
         threshold = 0.5
         if prediction_proba < threshold:
             label = CLASS_LABELS[0]  # benign
@@ -101,6 +103,7 @@ def predict():
         return jsonify({'error': f'Terjadi kesalahan saat prediksi: {str(e)}'}), 500
 
 
-# --- 6. Menjalankan Server ---
+# --- 6. Menjalankan Server (TIDAK PERLU DIUBAH) ---
+# Vercel akan mengabaikan bagian ini, tapi ini tetap berguna untuk testing lokal.
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
