@@ -62,7 +62,7 @@ def preprocess_image(image_bytes):
 
 
 # --- 5. Membuat Endpoint API '/predict' (TIDAK PERLU DIUBAH) ---
-@app.route('/predict', methods=['POST'])
+@app.route('/predict', methods=['GET','POST'])
 def predict():
     """Menerima file gambar, melakukan prediksi, dan mengembalikan hasilnya."""
     if model is None:
