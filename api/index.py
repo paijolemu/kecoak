@@ -6,8 +6,8 @@ import numpy as np
 import cv2
 import os
 
-app = Flask(__name__)
-CORS(app) 
+api = Flask(__name__)
+CORS(api) 
 
 IMG_SIZE = (160, 160)
 CLASS_LABELS = ['benign', 'malignant']
@@ -34,7 +34,7 @@ def preprocess_image(image_bytes):
         return img_batch
     except: return None
 
-@app.route('/predict', methods=['GET', 'POST'])
+@api.route('/predict', methods=['GET', 'POST'])
 def predict():
     if model is None: return jsonify({'error': 'Model tidak tersedia'}), 500
     if request.method == 'GET': return jsonify({'status': 'Server is running'})
@@ -56,4 +56,4 @@ def predict():
     except Exception as e:
         return jsonify({'error': f'Kesalahan prediksi: {str(e)}'}), 500
 
-if __name__ == '__main__': app.run(debug=True, port=5000)
+if __name__ == '__main__': api.run(debug=True, port=5000)
