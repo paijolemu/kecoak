@@ -53,7 +53,7 @@ function PredictPage() {
     formData.append('file', selectedFile);
 
     try {
-      const res = await axios.post('http://localhost:5000/predict', formData, {
+      const res = await axios.post('/api/predict', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
